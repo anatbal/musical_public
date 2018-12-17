@@ -2,7 +2,7 @@ from tkinter import Tk, Canvas, Label, Frame, StringVar, OptionMenu
 from tkinter import YES, BOTH, BOTTOM, N, E, W, S
 from tkinter.messagebox import showinfo
 
-from src.mixer import SONGS, complex_algorithm
+from mixer import SONGS, complex_algorithm
 
 CANVAS_WIDTH = 500
 CANVAS_HEIGHT = 150
@@ -49,9 +49,11 @@ class MixerPaint(object):
                 assert (self.user_points == [])
             return
         self.status = UserStatus.AWAITING_CLEAR
-        complex_algorithm(self.user_points, self.selected_song.get())
-        showinfo("Success", "Painting received!")
+
         print("Done receiving paint")
+        showinfo("Success", "Painting received!")
+
+        complex_algorithm(self.user_points, self.selected_song.get())
 
     def init_canvas(self):
         self.tkinter_master = Tk()
