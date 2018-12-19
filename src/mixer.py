@@ -4,6 +4,7 @@ from pydub import AudioSegment
 from pydub.playback import play
 import itertools
 
+SAMPLES_PATH = "..\samples"
 SONGS = {
     "Static & Ben-el - Silsulim": "silsulim.mp3"
 }
@@ -46,7 +47,7 @@ def complex_algorithm(input_points, selected_song):
     :return: Play the edited song
     """
     mp3_filename = SONGS[selected_song]
-    song = AudioSegment.from_mp3(os.path.join("..\samples", mp3_filename))
+    song = AudioSegment.from_mp3(os.path.join(SAMPLES_PATH, mp3_filename))
     cutted_song = song
     #cutted_song = song[:10000]  # for debug purposes
 
