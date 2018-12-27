@@ -2,7 +2,7 @@ from tkinter import Tk, Canvas, Label, Frame, StringVar, OptionMenu
 from tkinter import YES, BOTH, BOTTOM, N, E, W, S
 from tkinter.messagebox import showinfo
 
-from mixer import SONGS, complex_algorithm
+from src.mixer import SONGS, complex_algorithm
 
 CANVAS_WIDTH = 500
 CANVAS_HEIGHT = 150
@@ -92,7 +92,7 @@ class MixerPaint(object):
         self.canvas_w.bind("<ButtonRelease-1>", lambda event: self.stop_paint(event))
 
         # Use it to print debug
-        self.canvas_w.bind("<Leave>", lambda event: print(self.user_points))
+        #self.canvas_w.bind("<Leave>", lambda event: print(self.user_points))
 
     def start(self):
         self.tkinter_master.mainloop()
