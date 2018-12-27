@@ -3,7 +3,7 @@ from threading import Thread, Condition, Event
 #SILSULIM = sample("~/musical/playground/sample.wav")
 
 def loop_foo():
-    sample(AMBI_LUNAR_LAND, amp=0.5)
+    sample(GUIT_HARMONICS, amp=0.5,rate= 5)
     sleep (0.5)
 
 
@@ -26,7 +26,7 @@ live_thread_1.start()
 yes = input("Press Enter to continue...")
 if yes == 'y':
     def loop_foo():
-        sample(AMBI_LUNAR_LAND, amp=2.5)
+        sample(GUIT_HARMONICS, amp=2.5, rate = -1)
         sleep(0.5)
     sleep(10)
     stop_event.set()
