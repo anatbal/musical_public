@@ -49,7 +49,7 @@ def complex_algorithm(input_points, selected_song):
     mp3_filename = SONGS[selected_song]
     song = AudioSegment.from_mp3(os.path.join(SAMPLES_PATH, mp3_filename))
     cutted_song = song
-    #cutted_song = song[:10000]  # for debug purposes
+    cutted_song = song[:10000]  # for debug purposes
 
     dbDiff = translate_change(input_points)
     nums_split = splitNum(len(cutted_song), len(dbDiff))
