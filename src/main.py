@@ -2,13 +2,17 @@ from tkinter import Tk, Canvas, Label, Frame, StringVar, OptionMenu, Button
 from tkinter import YES, BOTH, BOTTOM, N, E, W, S
 from tkinter.messagebox import showinfo
 
-from src.mixer import SONGS, complex_algorithm
+from src.mixer import SONGS, complex_algorithm, translate_change
+from src.music import play_song, edit_params
+from src.music import NUM_CHUNKS, get_sample_duration
 
 CANVAS_WIDTH = 500
 CANVAS_HEIGHT = 150
 PYTHON_GREEN = "#476042"
 
-CHANGE_MILISECONDS = 1000 * 3
+CHANGE_SECONDS = 8
+CHANGE_MILISECONDS = 1000 * CHANGE_SECONDS
+
 
 class UserStatus:
     AWAITING_PLAY = 0
@@ -25,7 +29,7 @@ PARAMETER_TO_COLOR = {
 
 class MixerPaint(object):
     def __init__(self):
-        self.status = UserStatus.AWAITING_MOTION
+        self.status = UserStatus.AWAITING_PLAY
         self.volume_user_points = []
         self.pitch_user_points = []
 
@@ -72,10 +76,15 @@ class MixerPaint(object):
         self.status = UserStatus.AWAITING_MOTION
 
         print("Done receiving paint")
-        #print (self.volume_user_points)
+        self.start_follow()
         #showinfo("Success", "Painting received!")
 
-        #complex_algorithm(self.user_points, self.selected_song.get())
+        duration = get_sample_duration(SONGS[self.selected_song.get()])
+        affected_num_chunks = int((CHANGE_SECONDS / duration) * NUM_CHUNKS)
+
+        amp_diff = translate_change(user_points, affected_num_chunks)
+        amp_diff = [1 + x for x in amp_diff]
+        edit_params(amp_diff)
 
     def init_canvas(self):
         self.root = Tk()
@@ -142,8 +151,8 @@ class MixerPaint(object):
         user_points[:] = []
 
     def start_song(self):
-        #self._reset_canvas()
-        self.start_follow()
+        play_song(SONGS[self.selected_song.get()])
+        self.status = UserStatus.AWAITING_MOTION
 
     def start_follow(self):
         user_points = self.param_to_user_point[PARAMETER_TO_COLOR[self.parameter.get()][0]]

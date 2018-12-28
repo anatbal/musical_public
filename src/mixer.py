@@ -6,7 +6,7 @@ import itertools
 
 SAMPLES_PATH = "..\samples"
 SONGS = {
-    "Static & Ben-el - Silsulim": "silsulim.mp3"
+    "Static & Ben-el - Silsulim": "C:/Users/ibokobza/Documents/git/musical/playground/sample1.wav"
 }
 
 RAISE_FACTOR = 20
@@ -21,7 +21,9 @@ def splitNum(num, parts):
     else:
         return [base+1] * diff + [base] * (parts-diff)
 
-def translate_change(input_points):
+def translate_change(input_points, affected_num_chunks):
+    max_samples = affected_num_chunks
+
     y_axis_list = [point[1] for point in input_points]
     z_p = y_axis_list[0]
     max_p, min_p = max(y_axis_list), min(y_axis_list)
@@ -32,10 +34,10 @@ def translate_change(input_points):
     diff_list = [-(y-z_p)/scale for y in y_axis_list]
 
     # Alter to get MAX_SAMPLES
-    num_samples = min(MAX_SAMPLES, len(diff_list))
+    num_samples = min(max_samples, len(diff_list))
     nums_split = splitNum(len(diff_list), num_samples)
     idxs = list(itertools.accumulate(nums_split))
-    truncated_diff_list = [RAISE_FACTOR * diff_list[i-1] for i in idxs]
+    truncated_diff_list = [diff_list[i-1] for i in idxs]
     return truncated_diff_list
 
 
@@ -46,11 +48,6 @@ def complex_algorithm(input_points, selected_song):
     :param selected_song: The name of the song to play
     :return: Play the edited song
     """
-    mp3_filename = SONGS[selected_song]
-    song = AudioSegment.from_mp3(os.path.join(SAMPLES_PATH, mp3_filename))
-    cutted_song = song
-    cutted_song = song[:10000]  # for debug purposes
-
     dbDiff = translate_change(input_points)
     nums_split = splitNum(len(cutted_song), len(dbDiff))
     idxs = [0] + list(itertools.accumulate(nums_split))
