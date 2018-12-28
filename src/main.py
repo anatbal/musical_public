@@ -23,7 +23,7 @@ class UserStatus:
 
 PARAMETER_TO_COLOR = {
     "volume (blue)": ("volume", "blue"),
-    "pitch (green)": ("pitch", "green"),
+    "release(green)": ("release", "green"),
 #    "clap (black)": "black"
 }
 
@@ -31,11 +31,11 @@ class MixerPaint(object):
     def __init__(self):
         self.status = UserStatus.AWAITING_PLAY
         self.volume_user_points = []
-        self.pitch_user_points = []
+        self.release_user_points = []
 
         self.param_to_user_point = {
             "volume": self.volume_user_points,
-            "pitch": self.pitch_user_points
+            "release": self.release_user_points
         }
 
         self.root = None
@@ -69,6 +69,7 @@ class MixerPaint(object):
 
     def stop_paint(self, event):
         user_points = self.param_to_user_point[PARAMETER_TO_COLOR[self.parameter.get()][0]]
+        print(PARAMETER_TO_COLOR[self.parameter.get()][0])
         if self.status != UserStatus.AWAITING_RELEASE:
             if not user_points:
                 print("Single click isn't considered painting")
@@ -82,9 +83,9 @@ class MixerPaint(object):
         duration = get_sample_duration(SONGS[self.selected_song.get()])
         affected_num_chunks = int((CHANGE_SECONDS / duration) * NUM_CHUNKS)
 
-        amp_diff = translate_change(user_points, affected_num_chunks)
-        amp_diff = [1 + x for x in amp_diff]
-        edit_params(amp_diff)
+        diff = translate_change(user_points, affected_num_chunks)
+        diff = [1 + 10*x for x in diff]
+        edit_params(diff,PARAMETER_TO_COLOR[self.parameter.get()][0])
 
     def init_canvas(self):
         self.root = Tk()

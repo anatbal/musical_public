@@ -9,6 +9,7 @@ import contextlib
 #duration = 12
 NUM_CHUNKS = 100
 ring = [1] * NUM_CHUNKS
+release = [1] * NUM_CHUNKS
 current_index = 0
 
 def live_loop(condition, stop_event, song_file):
@@ -28,6 +29,7 @@ def live_loop(condition, stop_event, song_file):
             stop_event.set()
 
 
+
 def get_sample_duration(fname):
     with contextlib.closing(wave.open(fname, 'r')) as f:
         frames = f.getnframes()
@@ -44,14 +46,19 @@ def play_song(song_file):
     live_thread_1.start()
 
 
-def edit_params(amp_diff):
-    global ring, current_index
+def edit_params(diff,col_parm):
+    global release,ring, current_index
     picked_index = current_index
-    ring[picked_index:picked_index + len(amp_diff)] = amp_diff
-    ring[picked_index + len(amp_diff):] = [amp_diff[-1]] * (len(ring) - len(amp_diff) - picked_index)
+    if col_parm == "volume":
+        ring[picked_index:picked_index + len(diff)] = diff
+        ring[picked_index + len(diff):] = [diff[-1]] * (len(ring) - len(diff) - picked_index)
+    else:
+        print("true")
+        release[picked_index:picked_index + len(diff)] = diff
+        release[picked_index + len(diff):] = [diff[-1]] * (len(release) - len(diff) - picked_index)
 
 
 if __name__ == "__main__":
     if True:
-        mySamp = "C:/Users/ibokobza/Documents/git/musical/playground/sample1.wav"
+        mySamp = "/Users/anatbalzam/musical/playground/sample1.wav"
         play_song(mySamp)
