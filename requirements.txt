@@ -1,3 +1,4 @@
 pydub
 simpleaudio
 mido
+python-sonic
