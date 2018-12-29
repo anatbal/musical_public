@@ -60,8 +60,12 @@ class MixerPaint(object):
             self.status = UserStatus.AWAITING_RELEASE
             assert (user_points == [])
         # paint Oval
-        x1, y1 = (event.x - 1), (event.y - 1)
-        x2, y2 = (event.x + 1), (event.y + 1)
+        if user_points:
+            x1, y1 = user_points[-1][0], user_points[-1][1]
+            x2, y2 = event.x, event.y
+        else:
+            x1, y1 = (event.x - 1), (event.y - 1)
+            x2, y2 = (event.x + 1), (event.y + 1)
         oval_id = self.canvas_w.create_oval(x1, y1, x2, y2, fill=color, outline=color)
 
         # Add to points
