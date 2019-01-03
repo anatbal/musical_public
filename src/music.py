@@ -19,6 +19,7 @@ class Parameters:
         self.user_idx_dict = {}
         self.volume = [1] * self.num_chunks
         self.release = [0] * self.num_chunks
+        self.pan = [0] * self.num_chunks
 
 # Global params
 gp = None
@@ -66,7 +67,9 @@ class Song:
         follow_oval = {x: None for x in gp.user_points_dict.keys()}
         while not stop_event.is_set() and gp.current_index < num_chunks:
             sample(song_file, start=j, finish=j + part_diff,
-                   amp=gp.volume[gp.current_index % len(gp.volume)], pan=1),
+                   amp=gp.volume[gp.current_index % len(gp.volume)],
+                   pan=gp.pan[gp.current_index % len(gp.pan)]
+                   ),
                    #release=gp.release[gp.current_index])
             gp.current_index += 1
             j += part_diff
@@ -107,10 +110,12 @@ class Song:
 
         affected_num_chunks = self.get_num_chunks_affected()
         gp.user_points_dict[param_type] = pick_idxs(user_points, min(affected_num_chunks, len(user_points)))
-        if param_type in ["volume"]:
+        if param_type in ["volume", "release"]:
             new_vals = dim_y_to_diff_arr(user_points, affected_num_chunks)
-        else:
+        elif param_type in ["pan"]:
             new_vals = dim_x_to_diff_arr(user_points, affected_num_chunks)
+        else:
+            raise Exception("unfamiliar param type")
         self.edit_params(new_vals, param_type)
 
     def edit_params(self, diff, col_parm):
@@ -118,9 +123,10 @@ class Song:
         picked_index = gp.current_index
         if col_parm == "volume":
             gp.volume = diff
-        else:
-            gp.release[picked_index:picked_index + len(diff)] = diff
-            gp.release[picked_index + len(diff):] = [diff[-1]] * (len(gp.release) - len(diff) - picked_index)
+        elif col_parm == "release":
+            gp.release = diff
+        elif col_parm == "pan":
+            gp.pan = diff
 
     def reset_params(self):
         global gp
@@ -128,6 +134,7 @@ class Song:
         gp.user_idx_dict = {}
         gp.volume = [1] * gp.num_chunks
         gp.release = [0] * gp.num_chunks
+        gp.pan = [0] * gp.num_chunks
 
     @staticmethod
     def get_sample_duration(fname):
