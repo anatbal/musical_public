@@ -1,42 +1,38 @@
 from tkinter import Tk, Canvas, Label, Frame, StringVar, OptionMenu, Button
 from tkinter import YES, BOTH, BOTTOM, N, E, W, S
 from tkinter.messagebox import showinfo
+import copy
 
-from src.mixer import SONGS, complex_algorithm, translate_change
-from src.music import play_song, edit_params
-from src.music import NUM_CHUNKS, get_sample_duration
+from src.music import Song
+from src.config import *
 
-CANVAS_WIDTH = 500
-CANVAS_HEIGHT = 150
-PYTHON_GREEN = "#476042"
-
-CHANGE_SECONDS = 8
 CHANGE_MILISECONDS = 1000 * CHANGE_SECONDS
 
-
 class UserStatus:
-    AWAITING_PLAY = 0
-    AWAITING_MOTION = 1
-    AWAITING_RELEASE = 2
-    AWAITING_CLEAR = 3
+    AWAITING_MOTION = 0
+    AWAITING_RELEASE = 1
 
 
 PARAMETER_TO_COLOR = {
     "volume (blue)": ("volume", "blue"),
     "release(green)": ("release", "green"),
-#    "clap (black)": "black"
+    #    "clap (black)": "black"
 }
+
 
 class MixerPaint(object):
     def __init__(self):
-        self.status = UserStatus.AWAITING_PLAY
+        self.status = UserStatus.AWAITING_MOTION
         self.volume_user_points = []
         self.release_user_points = []
+        self.panning_user_points = []
 
         self.param_to_user_point = {
             "volume": self.volume_user_points,
-            "release": self.release_user_points
+            "release": self.release_user_points,
+            "panning": self.panning_user_points
         }
+        self.song = Song()
 
         self.root = None
         self.canvas_w = None
@@ -48,9 +44,6 @@ class MixerPaint(object):
         self.initialize_binds()
 
     def paint_and_save(self, event):
-        if self.status not in [UserStatus.AWAITING_MOTION, UserStatus.AWAITING_RELEASE]:
-            print("You have to clear the canvas before drawing")
-            return
         param, color = PARAMETER_TO_COLOR[self.parameter.get()]
         user_points = self.param_to_user_point[param]
         if self.status == UserStatus.AWAITING_MOTION:
@@ -66,14 +59,14 @@ class MixerPaint(object):
         else:
             x1, y1 = (event.x - 1), (event.y - 1)
             x2, y2 = (event.x + 1), (event.y + 1)
-        oval_id = self.canvas_w.create_oval(x1, y1, x2, y2, fill=color, outline=color)
+        line_id = self.canvas_w.create_line(x1, y1, x2, y2, fill=color)
 
         # Add to points
-        user_points.append((event.x, event.y, oval_id))
+        user_points.append((event.x, event.y, line_id))
 
     def stop_paint(self, event):
-        user_points = self.param_to_user_point[PARAMETER_TO_COLOR[self.parameter.get()][0]]
-        print(PARAMETER_TO_COLOR[self.parameter.get()][0])
+        param_type = PARAMETER_TO_COLOR[self.parameter.get()][0]
+        user_points = self.param_to_user_point[param_type]
         if self.status != UserStatus.AWAITING_RELEASE:
             if not user_points:
                 print("Single click isn't considered painting")
@@ -81,15 +74,7 @@ class MixerPaint(object):
         self.status = UserStatus.AWAITING_MOTION
 
         print("Done receiving paint")
-        self.start_follow()
-        #showinfo("Success", "Painting received!")
-
-        duration = get_sample_duration(SONGS[self.selected_song.get()])
-        affected_num_chunks = int((CHANGE_SECONDS / duration) * NUM_CHUNKS)
-
-        diff = translate_change(user_points, affected_num_chunks)
-        diff = [1 + 10*x for x in diff]
-        edit_params(diff,PARAMETER_TO_COLOR[self.parameter.get()][0])
+        self.song.try_edit_params(param_type, user_points)
 
     def init_canvas(self):
         self.root = Tk()
@@ -119,7 +104,7 @@ class MixerPaint(object):
         color_menu.grid(row=2, column=2)
 
         # Clear button
-        clear_btn = Button(self.root, text="Clear", width=10, command=self._reset_canvas)
+        clear_btn = Button(self.root, text="Clear", width=10, command=self.reset_canvas)
         clear_btn.pack()
 
         # Play button
@@ -144,48 +129,19 @@ class MixerPaint(object):
         self.canvas_w.bind("<ButtonRelease-1>", lambda event: self.stop_paint(event))
 
         # Use it to print debug
-        #self.canvas_w.bind("<Leave>", lambda event: print(self.user_points))
+        # self.canvas_w.bind("<Leave>", lambda event: print(self.user_points))
 
     def start(self):
         self.root.mainloop()
 
-    def _reset_canvas(self):
-        user_points = self.param_to_user_point[PARAMETER_TO_COLOR[self.parameter.get()][0]]
+    def reset_canvas(self):
+        for param, user_points in self.param_to_user_point.items():
+            user_points[:] = []
         self.canvas_w.delete("all")
-        self.status = UserStatus.AWAITING_MOTION
-        user_points[:] = []
+        self.song.reset_params()
 
     def start_song(self):
-        play_song(SONGS[self.selected_song.get()])
-        self.status = UserStatus.AWAITING_MOTION
-
-    def start_follow(self):
-        user_points = self.param_to_user_point[PARAMETER_TO_COLOR[self.parameter.get()][0]]
-        num_points = len(user_points)
-        if not num_points:
-            print("Can't follow without any lead")
-            return
-        interval = int(CHANGE_MILISECONDS / num_points)
-        self.do_follow(0, None, interval, user_points)
-
-    def do_follow(self, current_index, follow_oval, interval, user_points):
-        if follow_oval is not None:
-            self.canvas_w.delete(follow_oval)
-        if current_index < len(user_points):
-            x, y, _ = user_points[current_index]
-            x1, y1 = (x - 1), (y - 1)
-            x2, y2 = (x + 1), (y + 1)
-            follow_oval = self.canvas_w.create_oval(x1, y1, x2, y2, outline="red", width=3)
-            self.canvas_w.after(interval, self.do_follow, current_index + 1, follow_oval, interval, user_points)
-        else:
-            self._clear_ovals(user_points)
-
-    def _clear_ovals(self, user_points):
-        print ("Deleting oval!")
-        for _, _, oval_id in user_points:
-            self.canvas_w.delete(oval_id)
-        user_points[:] = []
-
+        self.song.play_song(SONGS[self.selected_song.get()], self.canvas_w, copy.deepcopy(self.param_to_user_point))
 
 
 def main():
