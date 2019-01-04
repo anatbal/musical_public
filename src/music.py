@@ -56,6 +56,7 @@ class Song:
     def __init__(self):
         self.song_file = None
         self.song_thread = None
+        self.sender = udp_client.SimpleUDPClient('127.0.0.1', 4559)
 
     def play_song_loop(self, stop_event, song_file):
         global gp
@@ -65,12 +66,12 @@ class Song:
 
         j = 0
         follow_oval = {x: None for x in gp.user_points_dict.keys()}
-        while not stop_event.is_set() and gp.current_index < num_chunks:
-            sample(song_file, start=j, finish=j + part_diff,
-                   amp=gp.volume[gp.current_index % len(gp.volume)],
-                   pan=gp.pan[gp.current_index % len(gp.pan)]
-                   ),
-                   #release=gp.release[gp.current_index])
+        while  gp.current_index < num_chunks:
+            #this replaces the previous sample
+            self.sender.send_message('/reg', ["/Users/anatbalzam/musical/playground/sample1.wav", gp.volume[gp.current_index % len(gp.volume)],j, j + part_diff,
+                                            gp.volume[gp.current_index % len(gp.volume)],
+                                            gp.pan[gp.current_index % len(gp.pan)], TIME_FOR_CHUNK])
+
             gp.current_index += 1
             j += part_diff
             sleep(TIME_FOR_CHUNK)
