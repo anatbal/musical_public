@@ -20,6 +20,11 @@ class Parameters:
         self.volume = [1] * self.num_chunks
         self.release = [0] * self.num_chunks
         self.pan = [0] * self.num_chunks
+        self.whammy = [0] * self.num_chunks
+        self.techno = [0] * self.num_chunks
+        self.bitcrusher = [0] * self.num_chunks
+        self.bpf = [0] * self.num_chunks
+        self.rhpf = [0] * self.num_chunks
 
 # Global params
 gp = None
@@ -68,9 +73,19 @@ class Song:
         follow_oval = {x: None for x in gp.user_points_dict.keys()}
         while  gp.current_index < num_chunks:
             #this replaces the previous sample
-            self.sender.send_message('/reg', ["/Users/anatbalzam/musical/playground/sample1.wav", gp.volume[gp.current_index % len(gp.volume)],j, j + part_diff,
-                                            gp.volume[gp.current_index % len(gp.volume)],
-                                            gp.pan[gp.current_index % len(gp.pan)], TIME_FOR_CHUNK])
+            self.sender.send_message('/effect',
+                                        [r'C:/Users/ibokobza/Documents/git/musical/playground/sample1.wav',  # Sample file
+                                         j,  # Start
+                                         j + part_diff,  # Stop
+                                         TIME_FOR_CHUNK,  # Time
+                                         gp.volume[gp.current_index % len(gp.volume)],  # Volume
+                                         gp.pan[gp.current_index % len(gp.pan)],  # Panning
+                                         gp.whammy[gp.current_index % len(gp.whammy)],  # Whammy
+                                         gp.techno[gp.current_index % len(gp.techno)],  # Techno
+                                         gp.bitcrusher[gp.current_index % len(gp.bitcrusher)],  # Bitcrusher
+                                         gp.bpf[gp.current_index % len(gp.bpf)],  # bpf
+                                         gp.rhpf[gp.current_index % len(gp.rhpf)],  # rhpf
+                                         ])
 
             gp.current_index += 1
             j += part_diff
