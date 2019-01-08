@@ -2,22 +2,22 @@ import itertools
 from src.config import *
 
 
-def dim_x_to_diff_arr(input_points, song_changing_chunks):
+def dim_x_to_diff_arr(input_points, song_changing_chunks, min_val, max_val, reverse=False):
     y_axis_list = [point[0] for point in input_points]
-    return dimension_arr_to_diff_arr(y_axis_list, song_changing_chunks)
+    return dimension_arr_to_diff_arr(y_axis_list, song_changing_chunks, min_val, max_val, reverse)
 
 
-def dim_y_to_diff_arr(input_points, song_changing_chunks):
+def dim_y_to_diff_arr(input_points, song_changing_chunks, min_val, max_val, reverse=False):
     y_axis_list = [point[1] for point in input_points]
-    return dimension_arr_to_diff_arr(y_axis_list, song_changing_chunks)
+    return dimension_arr_to_diff_arr(y_axis_list, song_changing_chunks, min_val, max_val, reverse)
 
 
-def dimension_arr_to_diff_arr(dim_arr, song_changing_chunks):
+def dimension_arr_to_diff_arr(dim_arr, song_changing_chunks, min_val, max_val, reverse):
     scaled_list = scale_list(dim_arr)
     num_samples = min(song_changing_chunks, len(scaled_list))
     diff_list = pick_idxs(scaled_list, num_samples)
-    return [1 + PARAM_CHANGE_FACTOR * x for x in diff_list]
-
+    reverse = -1 if reverse else 1
+    return [reverse*((x+1)*(max_val-min_val)/2+min_val) for x in diff_list]
 
 def split_num(num, parts):
     """divide number to parts with thought of the remainder"""

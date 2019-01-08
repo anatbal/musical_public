@@ -16,7 +16,9 @@ class UserStatus:
 PARAMETER_TO_COLOR = {
     "volume (blue)": ("volume", "blue"),
     "release (green)": ("release", "green"),
-    "pan (black)": ("pan", "black")
+    "pan (black)": ("pan", "black"),
+    "high (red)": ("high", "red"),
+    "low (yellow)": ("low", "yellow"),
     #    "clap (black)": "black"
 }
 
@@ -27,11 +29,15 @@ class MixerPaint(object):
         self.volume_user_points = []
         self.release_user_points = []
         self.panning_user_points = []
+        self.high_user_points = []
+        self.low_user_points = []
 
         self.param_to_user_point = {
             "volume": self.volume_user_points,
             "release": self.release_user_points,
-            "pan": self.panning_user_points
+            "pan": self.panning_user_points,
+            "high": self.high_user_points,
+            "low": self.low_user_points
         }
         self.song = Song()
 

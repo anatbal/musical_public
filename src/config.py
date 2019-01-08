@@ -12,6 +12,8 @@ CHANGE_SECONDS = 10
 TIME_FOR_CHUNK = 0.1
 
 SAMPLES_PATH = "..\samples"
+
+# The song here must be a full path because sonic-pi takes those without a current-directory reference
 SONGS = {
     "Static & Ben-el - Silsulim": "C:/Users/ibokobza/Documents/git/musical/playground/sample1.wav"
 }
